@@ -17,3 +17,6 @@ class Config:
     SESSION_COOKIE_SAMESITE = "Lax"
     REMEMBER_COOKIE_SAMESITE = "Lax"
 
+    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "static/uploads")
+    MAX_CONTENT_LENGTH = 4 * 1024 * 1024  # 4MB
+

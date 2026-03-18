@@ -1,7 +1,8 @@
 import re
 
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, SelectField, StringField, SubmitField
+from flask_wtf.file import FileAllowed, FileField
+from wtforms import PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import (
     DataRequired,
     Email,
@@ -10,7 +11,7 @@ from wtforms.validators import (
     ValidationError,
 )
 
-from models import User
+from models import Department, User
 
 
 def _password_strength_check(form, field):
@@ -61,7 +62,7 @@ class AdminUserCreateForm(FlaskForm):
     )
     role = SelectField(
         "Role",
-        choices=[("user", "User (Employee)"), ("admin", "Admin")],
+        choices=[("employee", "Employee"), ("manager", "Manager"), ("admin", "Admin")],
         validators=[DataRequired()],
     )
     submit = SubmitField("Create user")
@@ -77,7 +78,7 @@ class AdminUserEditForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email(), Length(max=255)])
     role = SelectField(
         "Role",
-        choices=[("user", "User (Employee)"), ("admin", "Admin")],
+        choices=[("employee", "Employee"), ("manager", "Manager"), ("admin", "Admin")],
         validators=[DataRequired()],
     )
     submit = SubmitField("Save changes")
@@ -90,4 +91,20 @@ class AdminUserEditForm(FlaskForm):
         existing = User.query.filter(User.email == field.data.lower(), User.id != self.user_id).first()
         if existing:
             raise ValidationError("Another user already uses this email.")
+
+
+class ProfileUpdateForm(FlaskForm):
+    profile_image = FileField(
+        "Profile image",
+        validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Only JPG, PNG, or WEBP images are allowed.")],
+    )
+    phone = StringField("Phone", validators=[Length(max=30)])
+    department_id = SelectField("Department", coerce=int, choices=[])
+    designation = StringField("Designation", validators=[Length(max=120)])
+    address = TextAreaField("Address", validators=[Length(max=1000)])
+    submit = SubmitField("Save profile")
+
+    def set_department_choices(self):
+        departments = Department.query.order_by(Department.name.asc()).all()
+        self.department_id.choices = [(0, "—")] + [(d.id, d.name) for d in departments]
 

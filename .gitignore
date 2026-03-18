@@ -7,3 +7,7 @@ venv/
 *.db
 *.sqlite3
 .DS_Store
+
+# User-uploaded media (keep folder via .gitkeep)
+static/uploads/*
+!static/uploads/.gitkeep

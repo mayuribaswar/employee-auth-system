@@ -1,3 +1,5 @@
+import os
+import uuid
 from functools import wraps
 
 from flask import (
@@ -9,11 +11,23 @@ from flask import (
     url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.utils import secure_filename
 
 from config import Config
-from extensions import csrf, db, login_manager
-from forms import AdminUserCreateForm, AdminUserEditForm, LoginForm, RegisterForm
-from models import User
+from extensions import csrf, db, login_manager, migrate
+from forms import (
+    AdminUserCreateForm,
+    AdminUserEditForm,
+    LoginForm,
+    ProfileUpdateForm,
+    RegisterForm,
+)
+from models import ActivityLog, Department, User
+
+
+def log_activity(action: str, user: User | None = None):
+    db.session.add(ActivityLog(user_id=getattr(user, "id", None), action=action))
+    db.session.commit()
 
 
 def admin_required(view):
@@ -30,11 +44,34 @@ def admin_required(view):
     return wrapper
 
 
+def role_required(*roles: str):
+    def decorator(view):
+        @wraps(view)
+        def wrapper(*args, **kwargs):
+            if not current_user.is_authenticated:
+                flash("Please sign in to continue.", "warning")
+                return redirect(url_for("auth_login", next=request.path))
+            if current_user.role not in roles:
+                flash("You are not authorized to access that page.", "danger")
+                return redirect(url_for("user_dashboard"))
+            return view(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def _allowed_image(filename: str) -> bool:
+    ext = (filename.rsplit(".", 1)[-1] if "." in filename else "").lower()
+    return ext in {"jpg", "jpeg", "png", "webp"}
+
+
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
 
     db.init_app(app)
+    migrate.init_app(app, db)
     login_manager.init_app(app)
     csrf.init_app(app)
 
@@ -62,6 +99,7 @@ def create_app():
                 return render_template("auth/login.html", form=form)
 
             login_user(user, remember=True)
+            log_activity("login", user=user)
             flash("Welcome back!", "success")
 
             next_url = request.args.get("next")
@@ -81,7 +119,7 @@ def create_app():
             user = User(
                 name=form.name.data.strip(),
                 email=form.email.data.lower().strip(),
-                role="user",
+                role="employee",
             )
             user.set_password(form.password.data)
             db.session.add(user)
@@ -95,6 +133,7 @@ def create_app():
     @app.get("/logout")
     @login_required
     def auth_logout():
+        log_activity("logout", user=current_user)
         logout_user()
         flash("You’ve been signed out.", "info")
         return redirect(url_for("landing"))
@@ -111,10 +150,48 @@ def create_app():
     def user_profile():
         if current_user.is_admin:
             return redirect(url_for("admin_dashboard"))
-        return render_template("user/profile.html")
+        form = ProfileUpdateForm(obj=current_user)
+        form.set_department_choices()
+        form.department_id.data = current_user.department_id or 0
+        return render_template("user/profile.html", form=form)
+
+    @app.post("/user/profile")
+    @login_required
+    def user_profile_update():
+        if current_user.is_admin:
+            return redirect(url_for("admin_dashboard"))
+
+        form = ProfileUpdateForm()
+        form.set_department_choices()
+        if not form.validate_on_submit():
+            return render_template("user/profile.html", form=form), 400
+
+        current_user.phone = (form.phone.data or "").strip() or None
+        current_user.designation = (form.designation.data or "").strip() or None
+        current_user.address = (form.address.data or "").strip() or None
+        current_user.department_id = form.department_id.data or None
+
+        if form.profile_image.data:
+            file = form.profile_image.data
+            filename = secure_filename(file.filename or "")
+            if not filename or not _allowed_image(filename):
+                flash("Invalid file type. Upload a JPG/PNG/WEBP image.", "danger")
+                return redirect(url_for("user_profile"))
+
+            ext = filename.rsplit(".", 1)[-1].lower()
+            new_name = f"user_{current_user.id}_{uuid.uuid4().hex}.{ext}"
+            upload_dir = os.path.join(app.root_path, app.config["UPLOAD_FOLDER"])
+            os.makedirs(upload_dir, exist_ok=True)
+            file.save(os.path.join(upload_dir, new_name))
+            current_user.profile_image = new_name
+
+        db.session.commit()
+        log_activity("profile_updated", user=current_user)
+        flash("Profile updated.", "success")
+        return redirect(url_for("user_profile"))
 
     @app.get("/admin/dashboard")
-    @admin_required
+    @role_required("admin")
     def admin_dashboard():
         total_users = User.query.count()
         total_admins = User.query.filter_by(role="admin").count()
@@ -125,7 +202,7 @@ def create_app():
         )
 
     @app.get("/admin/users")
-    @admin_required
+    @role_required("admin")
     def admin_users():
         q = (request.args.get("q") or "").strip()
         page = int(request.args.get("page") or 1)
@@ -147,7 +224,7 @@ def create_app():
         )
 
     @app.route("/admin/add-user", methods=["GET", "POST"])
-    @admin_required
+    @role_required("admin")
     def admin_add_user():
         form = AdminUserCreateForm()
         if form.validate_on_submit():
@@ -164,7 +241,7 @@ def create_app():
         return render_template("admin/add_user.html", form=form)
 
     @app.route("/admin/edit-user/<int:user_id>", methods=["GET", "POST"])
-    @admin_required
+    @role_required("admin")
     def admin_edit_user(user_id: int):
         user = User.query.get_or_404(user_id)
         form = AdminUserEditForm(user_id=user_id, obj=user)
@@ -178,7 +255,7 @@ def create_app():
         return render_template("admin/edit_user.html", form=form, user=user)
 
     @app.post("/admin/delete-user/<int:user_id>")
-    @admin_required
+    @role_required("admin")
     def admin_delete_user(user_id: int):
         user = User.query.get_or_404(user_id)
         if user.id == current_user.id:
@@ -204,7 +281,5 @@ def _redirect_after_login():
 
 if __name__ == "__main__":
     app = create_app()
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
 

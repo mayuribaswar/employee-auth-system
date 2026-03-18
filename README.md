@@ -45,6 +45,25 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+### Database migrations
+
+This project uses **Flask-Migrate** (Alembic) for schema updates.
+
+First-time migration setup:
+
+```bash
+flask --app app.py db init
+flask --app app.py db migrate -m "Initial HR modules"
+flask --app app.py db upgrade
+```
+
+After future model changes:
+
+```bash
+flask --app app.py db migrate -m "Describe change"
+flask --app app.py db upgrade
+```
+
 ### 2) Set up PostgreSQL
 
 1. Install PostgreSQL.
