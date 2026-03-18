@@ -1,0 +1,71 @@
+{% extends "layout/base.html" %}
+{% set show_sidebar = true %}
+{% block title %}Edit User · Admin{% endblock %}
+
+{% block content %}
+  <div class="page-header mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <div class="text-muted small">Admin</div>
+      <h2 class="h3 mb-0 fw-bold">Edit user</h2>
+      <div class="text-muted">{{ user.email }}</div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin_users') }}">
+      <i class="bi bi-arrow-left me-2"></i>Back
+    </a>
+  </div>
+
+  <div class="card card-soft shadow-sm">
+    <div class="card-body p-4 p-md-5">
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="form-floating">
+              {{ form.name(class_="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Full name") }}
+              <label for="{{ form.name.id }}"><i class="bi bi-person me-2"></i>Full name</label>
+              {% for err in form.name.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-floating">
+              {{ form.email(class_="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com") }}
+              <label for="{{ form.email.id }}"><i class="bi bi-envelope me-2"></i>Email</label>
+              {% for err in form.email.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-floating">
+              {{ form.role(class_="form-select" + (" is-invalid" if form.role.errors else "")) }}
+              <label for="{{ form.role.id }}"><i class="bi bi-person-gear me-2"></i>Role</label>
+              {% for err in form.role.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card card-soft h-100">
+              <div class="card-body">
+                <div class="text-muted small mb-1">Account created</div>
+                <div class="fw-semibold">{{ user.created_at.strftime("%b %d, %Y · %H:%M") if user.created_at else "-" }}</div>
+                <div class="text-muted small mt-2">
+                  Password changes aren’t exposed here. Create a new temp password by editing the backend if needed.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin_users') }}">Cancel</a>
+          {{ form.submit(class_="btn btn-primary") }}
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+

@@ -1,0 +1,13 @@
+{% extends "layout/base.html" %}
+{% set show_sidebar = false %}
+{% block title %}Not Found · Employee System{% endblock %}
+
+{% block content %}
+  <div class="py-5 text-center">
+    <div class="display-4 fw-bold">404</div>
+    <div class="h4 mb-2">Page not found</div>
+    <p class="text-muted">The page you’re looking for doesn’t exist or was moved.</p>
+    <a class="btn btn-primary" href="{{ url_for('landing') }}"><i class="bi bi-house me-2"></i>Go home</a>
+  </div>
+{% endblock %}
+

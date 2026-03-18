@@ -1,0 +1,71 @@
+{% extends "layout/base.html" %}
+{% set show_sidebar = true %}
+{% block title %}Add User · Admin{% endblock %}
+
+{% block content %}
+  <div class="page-header mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <div class="text-muted small">Admin</div>
+      <h2 class="h3 mb-0 fw-bold">Add user</h2>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin_users') }}">
+      <i class="bi bi-arrow-left me-2"></i>Back
+    </a>
+  </div>
+
+  <div class="card card-soft shadow-sm">
+    <div class="card-body p-4 p-md-5">
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="form-floating">
+              {{ form.name(class_="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Full name") }}
+              <label for="{{ form.name.id }}"><i class="bi bi-person me-2"></i>Full name</label>
+              {% for err in form.name.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-floating">
+              {{ form.email(class_="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com") }}
+              <label for="{{ form.email.id }}"><i class="bi bi-envelope me-2"></i>Email</label>
+              {% for err in form.email.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-floating">
+              {{ form.password(class_="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Temporary password") }}
+              <label for="{{ form.password.id }}"><i class="bi bi-key me-2"></i>Temporary password</label>
+              {% for err in form.password.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+              <div class="form-text">8+ chars with uppercase, lowercase, number, and symbol.</div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-floating">
+              {{ form.role(class_="form-select" + (" is-invalid" if form.role.errors else "")) }}
+              <label for="{{ form.role.id }}"><i class="bi bi-person-gear me-2"></i>Role</label>
+              {% for err in form.role.errors %}
+                <div class="invalid-feedback">{{ err }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin_users') }}">Cancel</a>
+          {{ form.submit(class_="btn btn-primary") }}
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+

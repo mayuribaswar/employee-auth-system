@@ -1,0 +1,42 @@
+<aside class="app-sidebar">
+  <div class="sidebar-inner">
+    <div class="sidebar-title text-muted small mb-2">Navigation</div>
+
+    <div class="nav flex-column gap-1">
+      {% if current_user.is_authenticated and current_user.is_admin %}
+        <a class="sidebar-link {% if request.path.startswith('/admin/dashboard') %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
+          <i class="bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+        <a class="sidebar-link {% if request.path.startswith('/admin/users') or request.path.startswith('/admin/add-user') or request.path.startswith('/admin/edit-user') %}active{% endif %}" href="{{ url_for('admin_users') }}">
+          <i class="bi bi-people"></i>
+          <span>Manage Users</span>
+        </a>
+      {% else %}
+        <a class="sidebar-link {% if request.path.startswith('/user/dashboard') %}active{% endif %}" href="{{ url_for('user_dashboard') }}">
+          <i class="bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+        <a class="sidebar-link {% if request.path.startswith('/user/profile') %}active{% endif %}" href="{{ url_for('user_profile') }}">
+          <i class="bi bi-person"></i>
+          <span>Profile</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="sidebar-footer mt-auto">
+      <div class="card card-soft">
+        <div class="card-body py-3">
+          <div class="d-flex align-items-start gap-2">
+            <i class="bi bi-shield-check text-primary"></i>
+            <div>
+              <div class="fw-semibold">Secure access</div>
+              <div class="text-muted small">Role-based dashboards & CSRF protection.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+

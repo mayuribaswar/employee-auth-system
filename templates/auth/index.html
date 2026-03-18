@@ -1,0 +1,86 @@
+{% extends "layout/base.html" %}
+{% set show_sidebar = false %}
+{% block title %}Employee System{% endblock %}
+
+{% block content %}
+  <div class="row align-items-center g-4 py-2 py-md-4">
+    <div class="col-lg-6">
+      <div class="hero-badge mb-3">
+        <i class="bi bi-stars me-2"></i>Modern Employee Authentication System
+      </div>
+      <h1 class="display-6 fw-bold mb-3">Secure access for employees and admins.</h1>
+      <p class="text-muted fs-5 mb-4">
+        Session-based authentication, password hashing, CSRF protection, and role-based dashboards—wrapped in a clean SaaS UI.
+      </p>
+
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('auth_login') }}">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Login
+        </a>
+        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth_register') }}">
+          <i class="bi bi-person-plus me-2"></i>Register (Employee)
+        </a>
+      </div>
+
+      <div class="mt-4 text-muted small">
+        Admin accounts are created via <code>seed.py</code>. Use <code>admin@example.com</code> / <code>admin123</code> after seeding.
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="card card-soft shadow-sm hover-lift">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-start gap-3">
+                <div class="icon-tile bg-primary-subtle text-primary">
+                  <i class="bi bi-person-badge"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">Login as User</div>
+                  <div class="text-muted">Access employee dashboard and profile.</div>
+                  <a class="btn btn-sm btn-primary mt-3" href="{{ url_for('auth_login') }}">Sign in</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="card card-soft shadow-sm hover-lift">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-start gap-3">
+                <div class="icon-tile bg-success-subtle text-success">
+                  <i class="bi bi-person-plus"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">Register as User</div>
+                  <div class="text-muted">Create an employee account in minutes.</div>
+                  <a class="btn btn-sm btn-outline-success mt-3" href="{{ url_for('auth_register') }}">Create account</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="card card-soft shadow-sm hover-lift">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-start gap-3">
+                <div class="icon-tile bg-warning-subtle text-warning">
+                  <i class="bi bi-shield-lock"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">Login as Admin</div>
+                  <div class="text-muted">Manage users, roles, and access.</div>
+                  <a class="btn btn-sm btn-outline-warning mt-3" href="{{ url_for('auth_login') }}">Admin sign in</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
